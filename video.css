@@ -139,3 +139,62 @@ video::-webkit-media-controls { display: none !important; }
     border: none !important;
     border-radius: 0 !important;
 }
+
+
+/* --- ЮТУБ ҮЧҮН КОШУМЧА СТИЛДЕР --- */
+
+/* Ютуб ойноткучу контейнерди толук ээлеши керек */
+#ytPlayer {
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: none; /* Экранды басканда Ютуб эмес, сенин интерфейсиң иштеши үчүн */
+}
+
+/* Фулскрин режиминде Ютубду тууралоо */
+.player-card:fullscreen #ytPlayer {
+    height: 100vh;
+    width: 100vw;
+}
+
+/* 5. ИНТЕРФЕЙС ЖАШЫРУУ (Жакшыртылган версия) */
+.player-card.ui-hidden .v-controls { 
+    opacity: 0; 
+    transform: translateY(20px); /* Бир аз ылдый жылып жоголот */
+    pointer-events: none;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.player-card .v-controls {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Фулскринде тексттер ак болушу үчүн */
+}
+
+.player-card:fullscreen .v-controls .action-btn svg {
+    color: #fff !important;
+    fill: #fff !important;
+}
+
+/* 6. ПЛЕЙЛИСТТЕГИ СҮРӨТТӨР (YouTube Thumbnails) */
+.pl-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Мобилдик түзмөктөр үчүн кошумча оптималдаштыруу */
+@media (max-width: 600px) {
+    .v-controls {
+        padding: 10px 12px;
+    }
+    .action-btn svg {
+        width: 26px;
+        height: 26px;
+    }
+    .pl-thumb {
+        width: 90px;
+        height: 55px;
+    }
+}
