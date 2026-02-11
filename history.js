@@ -1,12 +1,12 @@
+/* Сториз үчүн гана өзгөрмөлөр - аттарын өзгөрттүк (Conflict болбошу үчүн) */
+const storyModal = document.getElementById('storyFullscreen');
+const storyVideo = document.getElementById('mainVideo');
+const storyStatusBar = document.getElementById('statusBar');
+const storyProgressContainer = document.getElementById('progressBarContainer');
 
-const modal = document.getElementById('storyFullscreen');
-const mainVideo = document.getElementById('mainVideo');
-const statusBar = document.getElementById('statusBar');
-const progressContainer = document.getElementById('progressBarContainer');
+let isStoryDragging = false; 
 
-let isDragging = false;
-
-// Көрүлгөн сториздерди текшерүү
+// Сториздерди текшерүү
 window.addEventListener('load', () => {
     const viewedStories = JSON.parse(localStorage.getItem('viewedStories') || '[]');
     document.querySelectorAll('.story-item').forEach(item => {
@@ -16,10 +16,21 @@ window.addEventListener('load', () => {
     });
 });
 
+/* Сторизди ачуу */
 function viewStory(src, element) {
-    mainVideo.src = src;
-    modal.style.display = 'block';
-    mainVideo.play().catch(e => console.log("Play error:", e));
+    // МААНИЛҮҮ: Видео башталганда аудио плеерди токтотуу
+    if (typeof audio !== 'undefined' && !audio.paused) {
+        audio.pause();
+        // Эгер аудио плеердин кнопкасы бар болсо, анын иконкасын 'play' кылып коюу
+        if (typeof currentBtn !== 'undefined' && currentBtn) {
+            const icon = currentBtn.querySelector('.play-pause-icon');
+            if (icon) icon.classList.replace('is-paused', 'is-playing');
+        }
+    }
+
+    storyVideo.src = src;
+    storyModal.style.display = 'block';
+    storyVideo.play().catch(e => console.log("Play error:", e));
     
     const id = element.getAttribute('data-id');
     markAsViewed(id);
@@ -34,53 +45,69 @@ function markAsViewed(id) {
     }
 }
 
-// Прогресс-барды башкаруу
-mainVideo.ontimeupdate = () => {
-    if (!isDragging && mainVideo.duration) {
-        const percentage = (mainVideo.currentTime / mainVideo.duration) * 100;
-        statusBar.style.width = percentage + '%';
+// Видео прогресси
+storyVideo.ontimeupdate = () => {
+    if (!isStoryDragging && storyVideo.duration) {
+        const percentage = (storyVideo.currentTime / storyVideo.duration) * 100;
+        storyStatusBar.style.width = percentage + '%';
     }
 };
 
-function handleScrub(e) {
-    const rect = progressContainer.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+function handleStoryScrub(e) {
+    const rect = storyProgressContainer.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const x = clientX - rect.left;
     let percent = Math.min(Math.max(0, x / rect.width), 1);
-    statusBar.style.width = (percent * 100) + '%';
-    if (isDragging) mainVideo.currentTime = percent * mainVideo.duration;
+    storyStatusBar.style.width = (percent * 100) + '%';
+    if (isStoryDragging) storyVideo.currentTime = percent * storyVideo.duration;
 }
 
-const startDragging = (e) => { 
-    isDragging = true; 
-    progressContainer.classList.add('active'); 
-    mainVideo.pause(); 
-    handleScrub(e); 
+const startStoryDrag = (e) => { 
+    isStoryDragging = true; 
+    storyProgressContainer.classList.add('active'); 
+    storyVideo.pause(); 
+    handleStoryScrub(e); 
 };
 
-const stopDragging = () => { 
-    if (isDragging) { 
-        isDragging = false; 
-        progressContainer.classList.remove('active'); 
-        mainVideo.play(); 
+const stopStoryDrag = () => { 
+    if (isStoryDragging) { 
+        isStoryDragging = false; 
+        storyProgressContainer.classList.remove('active'); 
+        storyVideo.play(); 
     } 
 };
 
-const moveDragging = (e) => { if (isDragging) handleScrub(e); };
+const moveStoryDrag = (e) => { 
+    if (isStoryDragging) {
+        if (e.cancelable) e.preventDefault(); 
+        handleStoryScrub(e); 
+    } 
+};
 
-// Окуяларды байлоо
-progressContainer.addEventListener('mousedown', startDragging);
-window.addEventListener('mousemove', moveDragging);
-window.addEventListener('mouseup', stopDragging);
-progressContainer.addEventListener('touchstart', startDragging);
-window.addEventListener('touchmove', moveDragging);
-window.addEventListener('touchend', stopDragging);
+/* Окуяларды байлоо */
+storyProgressContainer.addEventListener('mousedown', startStoryDrag);
+storyProgressContainer.addEventListener('touchstart', startStoryDrag, { passive: false });
 
-function togglePlay() { mainVideo.paused ? mainVideo.play() : mainVideo.pause(); }
-function closeStory() { 
-    modal.style.display = 'none'; 
-    mainVideo.pause(); 
-    mainVideo.src = ""; 
-    progressContainer.classList.remove('active');
+// Window ордуна модалдык терезеге гана байлайбыз
+storyModal.addEventListener('mousemove', moveStoryDrag);
+storyModal.addEventListener('touchmove', moveStoryDrag, { passive: false });
+
+window.addEventListener('mouseup', stopStoryDrag);
+window.addEventListener('touchend', stopStoryDrag);
+
+// Видео ойнотуу/токтотуу
+function toggleStoryPlay() { 
+    if (storyVideo.paused) storyVideo.play(); else storyVideo.pause(); 
 }
-mainVideo.onended = closeStory;
+
+// Сторизди жабуу
+function closeStory() { 
+    storyModal.style.display = 'none'; 
+    storyVideo.pause(); 
+    storyVideo.src = ""; 
+    storyProgressContainer.classList.remove('active');
+    isStoryDragging = false;
+}
+
+storyVideo.onended = closeStory;
 
