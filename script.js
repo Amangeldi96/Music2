@@ -2,6 +2,11 @@
 const audio = document.getElementById('mainAudio');
 let currentBtn = null;
 
+// Аудиону оптималдаштыруу (Баарын жүктөөнү күтпөйт)
+if (audio) {
+    audio.preload = "metadata"; 
+}
+
 // Сториз үчүн өзгөрмөлөр
 const storyModal = document.getElementById('storyFullscreen');
 const storyVideo = document.getElementById('mainVideo');
@@ -74,36 +79,49 @@ const upcomingSongs = [
     { artist: "Нурила", title: "Жай гана", cover: "img/upcoming/u3.jpg", preview: "assets/preview3.mp3" }
 ];
 
-// 3. Универсалдуу ойноо функциясы (Музыка үчүн)
+// 3. Универсалдуу ойноо функциясы (ТЕЗДЕТИЛГЕН)
 function togglePlay(btn, src) {
     if (storyModal && storyModal.style.display === 'block') {
         closeStory();
     }
+
     const icon = btn.querySelector('.play-pause-icon');
+    
+    // Эгер ошол эле ыр болсо
     if (currentBtn === btn) {
         if (audio.paused) {
-            audio.play().catch(e => console.log("Play error:", e));
+            audio.play().catch(e => console.log(e));
             icon.classList.replace('is-playing', 'is-paused');
         } else {
             audio.pause();
             icon.classList.replace('is-paused', 'is-playing');
         }
-    } else {
-        if (currentBtn) {
-            const oldIcon = currentBtn.querySelector('.play-pause-icon');
-            if (oldIcon) oldIcon.classList.replace('is-paused', 'is-playing');
-            const prevCard = currentBtn.closest('.upcoming-card') || currentBtn.closest('.block');
-            if (prevCard && prevCard.querySelector('.progress-bg')) {
-                prevCard.querySelector('.progress-bg').style.width = '0%';
-            }
-        }
-        audio.src = src;
-        audio.load(); 
-        audio.play().then(() => {
-            icon.classList.replace('is-playing', 'is-paused');
-            currentBtn = btn;
-        }).catch(e => console.error("Жүктөө катасы:", e));
+        return;
     }
+
+    // Жаңы ырды жүктөө
+    if (currentBtn) {
+        const oldIcon = currentBtn.querySelector('.play-pause-icon');
+        if (oldIcon) oldIcon.classList.replace('is-paused', 'is-playing');
+        
+        const prevCard = currentBtn.closest('.upcoming-card') || currentBtn.closest('.block');
+        if (prevCard && prevCard.querySelector('.progress-bg')) {
+            prevCard.querySelector('.progress-bg').style.width = '0%';
+        }
+    }
+
+    audio.pause();
+    audio.src = src;
+    
+    // "canplay" - ырдын бир аз бөлүгү жүктөлөрү менен дароо баштайт
+    audio.oncanplay = () => {
+        audio.play().catch(e => console.log("Streaming error:", e));
+        icon.classList.replace('is-playing', 'is-paused');
+        currentBtn = btn;
+        audio.oncanplay = null; 
+    };
+
+    audio.load(); 
 }
 
 // 4. Музыка прогресс бары
@@ -120,7 +138,7 @@ audio.ontimeupdate = () => {
     }
 };
 
-// 5. СТОРИЗ ЛОГИКАСЫ
+// 5. СТОРИЗ ЛОГИКАСЫ (Жылмакай жана Тез)
 function animateStoryProgress() {
     if (!isStoryDragging && !storyVideo.paused && storyVideo.duration) {
         const percentage = (storyVideo.currentTime / storyVideo.duration) * 100;
@@ -137,7 +155,7 @@ function viewStory(src, element) {
     storyModal.style.display = 'block';
 
     storyVideo.oncanplay = () => {
-        storyVideo.play().catch(e => console.log("Story error:", e));
+        storyVideo.play();
         cancelAnimationFrame(storyAnim);
         storyAnim = requestAnimationFrame(animateStoryProgress);
     };
@@ -152,11 +170,11 @@ function closeStory() {
     storyVideo.removeAttribute('src'); 
     storyVideo.load(); 
     storyStatusBar.style.width = '0%';
-    storyProgressContainer.classList.remove('active'); // Ичкертүү
+    if (storyProgressContainer) storyProgressContainer.classList.remove('active');
     isStoryDragging = false;
 }
 
-// Түрдүрүү (Scrubbing) - Басканда жоонотуу функциясы менен
+// Сторизди түрдүрүү (Scrubbing)
 function handleStoryScrub(e) {
     if (!storyVideo.duration) return;
     const rect = storyProgressContainer.getBoundingClientRect();
@@ -170,36 +188,29 @@ function handleStoryScrub(e) {
     }
 }
 
-// Басканда (Жоонотуу башталат)
 const startDragging = (e) => {
     isStoryDragging = true;
-    storyProgressContainer.classList.add('active'); // CSS үчүн класс (Жоонотуу)
+    storyProgressContainer.classList.add('active'); 
     storyVideo.pause();
     handleStoryScrub(e);
 };
 
-// Койо бергенде (Кайра ичкерип, видео уланат)
 const stopDragging = () => {
     if (isStoryDragging) {
         isStoryDragging = false;
-        storyProgressContainer.classList.remove('active'); // Кайра ичкертүү
+        storyProgressContainer.classList.remove('active'); 
         storyVideo.play();
         storyAnim = requestAnimationFrame(animateStoryProgress);
     }
 };
 
-storyProgressContainer.addEventListener('mousedown', startDragging);
-storyProgressContainer.addEventListener('touchstart', (e) => {
-    startDragging(e);
-}, { passive: false });
+if (storyProgressContainer) {
+    storyProgressContainer.addEventListener('mousedown', startDragging);
+    storyProgressContainer.addEventListener('touchstart', startDragging, { passive: false });
+}
 
-window.addEventListener('mousemove', (e) => {
-    if (isStoryDragging) handleStoryScrub(e);
-});
-window.addEventListener('touchmove', (e) => {
-    if (isStoryDragging) handleStoryScrub(e);
-}, { passive: false });
-
+window.addEventListener('mousemove', (e) => { if (isStoryDragging) handleStoryScrub(e); });
+window.addEventListener('touchmove', (e) => { if (isStoryDragging) handleStoryScrub(e); }, { passive: false });
 window.addEventListener('mouseup', stopDragging);
 window.addEventListener('touchend', stopDragging);
 
@@ -207,7 +218,6 @@ storyVideo.onended = closeStory;
 
 // 6. Тизмелерди экранга чыгаруу
 document.addEventListener('DOMContentLoaded', () => {
-    // AlbumList, HitList, UpcomingList, ArtistDetail ж.б. (Кодуң өзгөрүүсүз калат)
     const albumContainer = document.getElementById('albumList');
     if (albumContainer) {
         songs.slice(0, 5).forEach((song, index) => {
@@ -299,4 +309,4 @@ audio.onended = () => {
         currentBtn = null;
     }
 };
-        
+            
