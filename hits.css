@@ -8,64 +8,77 @@
     background: var(--bg-card) !important; 
     border-top: 1px solid var(--border);
     box-shadow: 0 -8px 30px var(--shadow);
-    transition: bottom 0.6s cubic-bezier(0.19, 1, 0.22, 1); /* Өтө плавно чыгуу */
+    transition: bottom 0.6s cubic-bezier(0.19, 1, 0.22, 1);
     z-index: 2000;
     padding: 0 16px;
     display: flex;
     flex-direction: column;
-    backdrop-filter: blur(10px); /* Айнек сымал эффект (колдосо) */
+    backdrop-filter: blur(10px);
 }
 
 .player-bar.active {
     bottom: 0;
 }
 
-/* ===================== ПЛАВНО PROGRESS BAR ===================== */
+/* ===================== PROGRESS BAR (ЖУМШАК ЖЫЛУУ ОҢДОЛДУ) ===================== */
 .p-progress-container {
-    width: 100%;
-    height: 6px; 
-    background: var(--progress-bg);
     position: relative;
+    background: rgba(0, 0, 0, 0.1) !important; 
+    height: 6px;
+    border-radius: 10px;
     cursor: pointer;
-    margin-top: 12px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    /* Жооноруп кетпеши үчүн height туруктуу */
+    margin-top: 15px;
+    width: 100%;
 }
 
-.p-progress-fill {
+/* Жүктөлүү (Buffer) */
+.p-progress-buffer {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
-    background: var(--accent) !important;
     width: 0%;
+    background: #00c46a !important; 
+    opacity: 0.2; 
     border-radius: 10px;
-    position: relative;
-    /* transition'ду 0.1s кылыңыз же алып салыңыз */
-    transition: width 0.1s linear; 
-    will-change: width; /* Браузерге бул элемент тез өзгөрөрүн эскертет */
+    z-index: 1; 
+    transition: width 0.3s ease;
+    pointer-events: none;
 }
 
+/* Негизги прогресс (Fill) - ПЛАВНО ЖЫЛУУ ҮЧҮН transition КОШУЛДУ */
+.p-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: var(--accent) !important; 
+    border-radius: 10px;
+    z-index: 5;
+    /* Ушул сап сызыктын жумшак жылышын камсыз кылат */
+    transition: width 0.2s linear; 
+}
 
-/* Сүйрөөчү тегерекче (Thumb) */
+/* БИР ГАНА АК ТОГОЛОК (Handle) */
 .p-progress-fill::after {
     content: "";
     position: absolute;
-    right: -7px;
+    right: -7px; 
     top: 50%;
-    transform: translateY(-50%) scale(0); /* Башында көрүнбөйт */
+    transform: translateY(-50%);
     width: 14px;
     height: 14px;
     background: #fff;
     border-radius: 50%;
     box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 10;
+    cursor: pointer;
 }
 
-/* Басканда же үстүнө барганда thumb чоңоюп чыгат */
-.p-progress-container:hover .p-progress-fill::after,
-.p-progress-container.dragging .p-progress-fill::after {
-    transform: translateY(-50%) scale(1);
+/* Эски тоголокту жашыруу */
+.p-handle {
+    display: none !important;
 }
 
 /* ===================== PLAYER CONTENT ===================== */
@@ -73,7 +86,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 8px;
+    padding-top: 10px;
 }
 
 .p-info {
@@ -97,8 +110,8 @@
 }
 
 .p-controls {
-    width: 46px;
-    height: 46px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -106,11 +119,11 @@
     border-radius: 50%;
     box-shadow: 0 4px 12px var(--accent-dim);
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 .p-controls:active {
-    transform: scale(0.92); /* Басканда кичирейүү эффекти */
+    transform: scale(0.92);
 }
 
 /* ===================== SEARCH UI ===================== */
@@ -122,7 +135,7 @@
 #searchInput {
     width: 100%;
     padding: 14px 15px 14px 48px;
-    border-radius: 16px; /* Көбүрөөк тегеректелген */
+    border-radius: 16px;
     border: 1px solid var(--border);
     background: var(--bg-card);
     color: var(--text-main);
@@ -131,71 +144,3 @@
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px var(--shadow);
 }
-
-#searchInput:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-dim);
-    background: var(--bg-container); /* Фокуста бир аз түсү өзгөрөт */
-}
-
-.search-icon {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-sub);
-    pointer-events: none;
-    transition: color 0.3s ease;
-}
-
-#searchInput:focus + .search-icon {
-    color: var(--accent);
-}
-
-/* Ырлардын тизмеси бош болгондогу текст */
-.no-results {
-    text-align: center;
-    color: var(--text-sub);
-    padding: 40px 20px;
-    font-size: 14px;
-}
-
-
-
-
-
-
-/* Контейнерди тууралоо */
-.p-progress-container {
-    position: relative;
-    background: rgba(255, 255, 255, 0.1) !important; /* Фонду бир аз тунук кылабыз */
-    height: 6px;
-    border-radius: 10px;
-}
-
-/* Жүктөлүү (Buffer) - Эми даана көрүнөт */
-.p-progress-buffer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 0%;
-    background: #00c46a !important; /* Даана жашыл түс */
-    opacity: 0.4; /* Бирок тунук */
-    border-radius: 10px;
-    z-index: 5; /* Фондон өйдө */
-    transition: width 0.3s ease;
-    pointer-events: none;
-}
-
-/* Негизги прогресс (Fill) */
-.p-progress-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    z-index: 10; /* Баарынан өйдө */
-    background: var(--accent) !important;
-    border-radius: 10px;
-}
-
