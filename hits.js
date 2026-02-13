@@ -7,7 +7,7 @@
     const mainPlayBtn = document.getElementById('mainPlayBtn');
     const searchInput = document.getElementById('searchInput');
 
-    // 1. СТИЛЬ: Буферди (загрузка) даана көрүнө тургандай кылабыз
+    // 1. СТИЛЬ: Загрузка тилкесин даана жана плавный кылабыз
     const style = document.createElement('style');
     style.innerHTML = `
         .p-progress-container { 
@@ -21,9 +21,10 @@
             position: absolute; 
             top: 0; left: 0; height: 100%; 
             background: var(--accent); 
-            opacity: 0.25; /* Өтө тунук эмес, даана көрүнөт */
+            opacity: 0.3; 
             z-index: 1; 
-            transition: width 0.2s ease-out; /* Тезирээк реакция кылат */
+            width: 0%;
+            transition: width 0.3s ease;
             pointer-events: none;
             border-radius: 10px;
         }
@@ -32,32 +33,32 @@
             position: relative; 
             background: var(--accent) !important;
             height: 100%;
+            width: 0%;
             border-radius: 10px;
             transition: width 0.1s linear;
         }
+        /* Жүктөлүп жатканда плеер баскычы бир аз тунук болуп турат */
+        .player-loading { opacity: 0.5; pointer-events: none; }
     `;
     document.head.appendChild(style);
 
-    // Буфер элементин түзүү
     const pBuffer = document.createElement('div');
     pBuffer.className = 'p-progress-buffer';
-    if (pCont && pFill) {
-        pCont.insertBefore(pBuffer, pFill);
-    }
+    if (pCont && pFill) { pCont.insertBefore(pBuffer, pFill); }
 
     let currentBtn = null;
     let isDragging = false;
-
     const iconHTML = `<div class="play-pause-icon is-playing"><div class="bar bar-1"></div><div class="bar bar-2"></div></div>`;
 
-    // 2. ОЙНОТУУ ФУНКЦИЯСЫ
+    // 2. ЖҮКТӨӨ ЖАНА ОЙНОТУУ
     window.togglePlay = function(btn, src, title, artist) {
         if (!audio) return;
         
-        // Ар бир жаңы ырда буферди тазалап туруу
+        // Маанилүү: Жаңы ыр башталаар замат баарын НӨЛ кылабыз
+        pFill.style.transition = 'none';
         pBuffer.style.width = "0%";
         pFill.style.width = "0%";
-
+        
         const icon = btn.querySelector('.play-pause-icon');
         if (currentBtn === btn) { window.toggleMainPlay(); return; }
         
@@ -66,46 +67,62 @@
             if (oldIcon) oldIcon.classList.replace('is-paused', 'is-playing');
         }
 
-        audio.src = src;
-        // Музыканы жүктөө башталды
-        audio.load(); 
-        audio.play().catch(e => console.log("Play error:", e));
-        
+        // Плеерди даярдоо
         playerBar.classList.add('active');
         document.getElementById('pTitle').innerText = title;
         document.getElementById('pArtist').innerText = artist;
         mainPlayBtn.innerHTML = iconHTML.replace('is-playing', 'is-paused');
-        icon.classList.replace('is-playing', 'is-paused');
-        currentBtn = btn;
+        
+        // Аудиону жүктөө
+        audio.pause();
+        audio.src = src;
+        audio.load(); // Серверден жүктөөнү баштоо
+        
+        // Жүктөлүп баштаганда индикатор берип турабыз
+        mainPlayBtn.classList.add('player-loading');
+
+        // Ойнотуу (браузер уруксат бергенде)
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                mainPlayBtn.classList.remove('player-loading');
+                icon.classList.replace('is-playing', 'is-paused');
+                currentBtn = btn;
+            }).catch(error => {
+                console.log("Жүктөө катасы:", error);
+            });
+        }
     };
 
-    // 3. ЗАГРУЗКА (BUFFER) ЛОГИКАСЫ - ЭҢ МААНИЛҮҮ ЖЕР
+    // 3. БУФЕРДИ ТАК ЭСЕПТӨӨ
     const updateBuffer = () => {
-        if (audio.duration > 0) {
-            for (let i = 0; i < audio.buffered.length; i++) {
-                // Учурдагы ойноп жаткан убакыттын алдындагы жүктөлгөн бөлүктү табабыз
-                if (audio.buffered.start(i) <= audio.currentTime) {
-                    const bufferedEnd = audio.buffered.end(i);
-                    const percent = (bufferedEnd / audio.duration) * 100;
-                    pBuffer.style.width = percent + "%";
+        if (audio.duration) {
+            const buffered = audio.buffered;
+            if (buffered.length > 0) {
+                // Учурдагы убакытка эң жакын жүктөлгөн сегментти табабыз
+                for (let i = 0; i < buffered.length; i++) {
+                    if (buffered.start(i) <= audio.currentTime) {
+                        const percent = (buffered.end(i) / audio.duration) * 100;
+                        pBuffer.style.width = percent + "%";
+                    }
                 }
             }
         }
     };
 
-    // Аудио жүктөлүп жатканда да, ойноп жатканда да текшерип турат
     audio.addEventListener('progress', updateBuffer);
-    audio.addEventListener('timeupdate', updateBuffer);
+    audio.addEventListener('waiting', () => mainPlayBtn.classList.add('player-loading'));
+    audio.addEventListener('playing', () => mainPlayBtn.classList.remove('player-loading'));
 
-    // 4. ПРОГРЕСС (ОЙНОП ЖАТКАН УБАКЫТ)
-    audio.ontimeupdate = () => {
+    // 4. ПРОГРЕСС ЖАНА 0дөн БАШТАП ЭСЕПТӨӨ
+    audio.addEventListener('timeupdate', () => {
         if (audio.duration && !isDragging) {
+            pFill.style.transition = 'width 0.1s linear';
             const currentProgress = (audio.currentTime / audio.duration) * 100;
             pFill.style.width = currentProgress + "%";
-            // Жүктөлүүнү да кошо текшерип турабыз
             updateBuffer();
         }
-    };
+    });
 
     // 5. ПАУЗА / ПЛЕЙ
     window.toggleMainPlay = function() {
@@ -123,7 +140,7 @@
         }
     };
 
-    // 6. SCRUBBING (ЖЫЛДЫРУУ)
+    // 6. SCRUBBING
     function scrub(e) {
         if (!audio.duration) return;
         const rect = pCont.getBoundingClientRect();
@@ -137,12 +154,12 @@
 
     pCont.addEventListener('mousedown', (e) => { isDragging = true; scrub(e); });
     window.addEventListener('mousemove', (e) => { if (isDragging) scrub(e); });
-    window.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; pFill.style.transition = 'width 0.1s linear'; } });
+    window.addEventListener('mouseup', () => { if (isDragging) isDragging = false; });
     pCont.addEventListener('touchstart', (e) => { isDragging = true; scrub(e); }, {passive: false});
     window.addEventListener('touchmove', (e) => { if (isDragging) { scrub(e); e.preventDefault(); } }, {passive: false});
     window.addEventListener('touchend', () => { isDragging = false; });
 
-    // 7. РЕНДЕР ЖАНА БАШКАЛАР
+    // Рендер
     function renderSongs(songsToDisplay = songs) {
         if (!listDiv) return;
         listDiv.innerHTML = "";
@@ -160,4 +177,4 @@
 
     renderSongs();
 })();
- 
+    
