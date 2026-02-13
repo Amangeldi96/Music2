@@ -1,0 +1,181 @@
+/* ===================== PLAYER BAR ===================== */
+.player-bar {
+    position: fixed;
+    bottom: -120px; 
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: var(--bg-card) !important; 
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 30px var(--shadow);
+    transition: bottom 0.6s cubic-bezier(0.19, 1, 0.22, 1); /* Өтө плавно чыгуу */
+    z-index: 2000;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(10px); /* Айнек сымал эффект (колдосо) */
+}
+
+.player-bar.active {
+    bottom: 0;
+}
+
+/* ===================== ПЛАВНО PROGRESS BAR ===================== */
+.p-progress-container {
+    width: 100%;
+    height: 6px; 
+    background: var(--progress-bg);
+    position: relative;
+    cursor: pointer;
+    margin-top: 12px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    /* Жооноруп кетпеши үчүн height туруктуу */
+}
+
+.p-progress-fill {
+    height: 100%;
+    background: var(--accent) !important;
+    width: 0%;
+    border-radius: 10px;
+    position: relative;
+    /* transition'ду 0.1s кылыңыз же алып салыңыз */
+    transition: width 0.1s linear; 
+    will-change: width; /* Браузерге бул элемент тез өзгөрөрүн эскертет */
+}
+
+
+/* Сүйрөөчү тегерекче (Thumb) */
+.p-progress-fill::after {
+    content: "";
+    position: absolute;
+    right: -7px;
+    top: 50%;
+    transform: translateY(-50%) scale(0); /* Башында көрүнбөйт */
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10;
+}
+
+/* Басканда же үстүнө барганда thumb чоңоюп чыгат */
+.p-progress-container:hover .p-progress-fill::after,
+.p-progress-container.dragging .p-progress-fill::after {
+    transform: translateY(-50%) scale(1);
+}
+
+/* ===================== PLAYER CONTENT ===================== */
+.p-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+}
+
+.p-info {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-right: 15px;
+}
+
+.p-info b { 
+    display: block; 
+    font-size: 15px; 
+    color: var(--text-main);
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.p-info span { 
+    font-size: 13px; 
+    color: var(--text-sub);
+}
+
+.p-controls {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent) !important;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px var(--accent-dim);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.p-controls:active {
+    transform: scale(0.92); /* Басканда кичирейүү эффекти */
+}
+
+/* ===================== SEARCH UI ===================== */
+.search-container {
+    position: relative;
+    margin: 10px 16px 20px 16px;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 14px 15px 14px 48px;
+    border-radius: 16px; /* Көбүрөөк тегеректелген */
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-size: 15px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+#searchInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+    background: var(--bg-container); /* Фокуста бир аз түсү өзгөрөт */
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-sub);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+#searchInput:focus + .search-icon {
+    color: var(--accent);
+}
+
+/* Ырлардын тизмеси бош болгондогу текст */
+.no-results {
+    text-align: center;
+    color: var(--text-sub);
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+
+
+/* Жүктөлүү (Buffer) катмары */
+.p-progress-buffer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    /* Тунук жашыл түс (rgba: кызыл, жашыл, көк, тунуктук) */
+    background: rgba(0, 196, 106, 0.3); 
+    border-radius: 10px;
+    z-index: 1; /* Негизги прогресстин астында турат */
+    transition: width 0.4s ease; /* Жүктөлүү плавный жылат */
+}
+
+/* Негизги прогресс катмарын буфердин үстүнө чыгаруу */
+.p-progress-fill {
+    z-index: 2;
+}
