@@ -20,7 +20,7 @@
     bottom: 0;
 }
 
-/* ===================== PROGRESS BAR (ЖУМШАК ЖЫЛУУ ОҢДОЛДУ) ===================== */
+/* ===================== PROGRESS BAR ===================== */
 .p-progress-container {
     position: relative;
     background: rgba(0, 0, 0, 0.1) !important; 
@@ -31,7 +31,6 @@
     width: 100%;
 }
 
-/* Жүктөлүү (Buffer) */
 .p-progress-buffer {
     position: absolute;
     top: 0;
@@ -46,7 +45,6 @@
     pointer-events: none;
 }
 
-/* Негизги прогресс (Fill) - ПЛАВНО ЖЫЛУУ ҮЧҮН transition КОШУЛДУ */
 .p-progress-fill {
     position: absolute;
     top: 0;
@@ -56,11 +54,9 @@
     background: var(--accent) !important; 
     border-radius: 10px;
     z-index: 5;
-    /* Ушул сап сызыктын жумшак жылышын камсыз кылат */
     transition: width 0.2s linear; 
 }
 
-/* БИР ГАНА АК ТОГОЛОК (Handle) */
 .p-progress-fill::after {
     content: "";
     position: absolute;
@@ -73,10 +69,8 @@
     border-radius: 50%;
     box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     z-index: 10;
-    cursor: pointer;
 }
 
-/* Эски тоголокту жашыруу */
 .p-handle {
     display: none !important;
 }
@@ -143,4 +137,35 @@
     outline: none;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px var(--shadow);
+}
+
+#searchInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+    background: var(--bg-container);
+}
+
+/* МЫНА ИКОНКАНЫН СТИЛИ: */
+.search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-sub);
+    pointer-events: none;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#searchInput:focus + .search-icon {
+    color: var(--accent);
+}
+
+.no-results {
+    text-align: center;
+    color: var(--text-sub);
+    padding: 40px 20px;
+    font-size: 14px;
 }
