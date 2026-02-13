@@ -31,14 +31,16 @@
     width: 100%;
 }
 
+/* ЗАГРУЗКА (BUFFER) ОҢДОЛДУ: Эми темага жараша өзгөрөт */
 .p-progress-buffer {
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
     width: 0%;
-    background: #00c46a !important; 
-    opacity: 0.2; 
+    /* Бул жерде #00c46a ордуна var(--accent) койдук */
+    background: var(--accent) !important; 
+    opacity: 0.25; /* Прогресстен айырмаланып тунук болушу үчүн */
     border-radius: 10px;
     z-index: 1; 
     transition: width 0.3s ease;
@@ -145,7 +147,6 @@
     background: var(--bg-container);
 }
 
-/* МЫНА ИКОНКАНЫН СТИЛИ: */
 .search-icon {
     position: absolute;
     left: 18px;
