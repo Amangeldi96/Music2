@@ -49,17 +49,8 @@
     transition: width 0.15s linear;
 }
 
-.p-progress-fill::after {
-    content: "";
-    position: absolute;
-    right: -6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 13px;
-    height: 13px;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+.p-progress-fill::after{
+    display: none !important;
 }
 
 /* ===================== CONTENT ===================== */
@@ -178,8 +169,8 @@
     font-size: 14px;
 }
 .play-icon-circle svg {
-    width: 16px;  /* Иконканын өзүнүн өлчөмү */
-    height: 16px;
+    width: 19px;  /* Иконканын өзүнүн өлчөмү */
+    height: 19px;
 }
 .control-btn svg{
     width: 16px;  /* Иконканын өзүнүн өлчөмү */
