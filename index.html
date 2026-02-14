@@ -52,58 +52,65 @@
         </header>
         
         <div class="stories-container">
-            <div class="story-item" data-id="story1" onclick="viewStory('./Video1.mp4', this)">
-                <div class="story-circle">
-                    <div class="video-wrapper">
-                        <video preload="metadata" muted playsinline>
-                            <source src="./Video1.mp4#t=0.5">
-                        </video>
-                    </div>
-                </div>
-                <p>FreeMan996</p>
-            </div>
-            
-            <div class="story-item" data-id="story2" onclick="viewStory('./video2.mp4', this)">
-                <div class="story-circle">
-                    <div class="video-wrapper">
-                        <video preload="metadata" muted playsinline>
-                            <source src="./video2.mp4#t=0.5">
-                        </video>
-                    </div>
-                </div>
-                <p>Нурила</p>
-            </div>
-
-            <div class="story-item" data-id="story3" onclick="viewStory('./video3.mp4', this)">
-                <div class="story-circle">
-                    <div class="video-wrapper">
-                        <video preload="metadata" muted playsinline>
-                            <source src="./video3.mp4#t=0.5">
-                        </video>
-                    </div>
-                </div>
-                <p>Азамат</p>
-            </div>
-
-            <div class="story-item" data-id="story4" onclick="viewStory('./video4.mp4', this)">
-                <div class="story-circle">
-                    <div class="video-wrapper">
-                        <video preload="metadata" muted playsinline>
-                            <source src="./video4.mp4#t=0.5">
-                        </video>
-                    </div>
-                </div>
-                <p>Айпери</p>
+    <div class="story-item" data-id="story1" onclick="viewStory('./Video1.mp4', this)">
+        <div class="story-circle">
+            <div class="video-wrapper">
+                <video preload="metadata" muted playsinline oncontextmenu="return false;">
+                    <source src="./Video1.mp4#t=0.5">
+                </video>
             </div>
         </div>
-
-        <div id="storyFullscreen">
-            <div class="status-bar-container" id="progressBarContainer">
-                <div class="status-bar-bg"><div id="statusBar" class="status-bar-fill"></div></div>
+        <p>FreeMan996</p>
+    </div>
+    
+    <div class="story-item" data-id="story2" onclick="viewStory('./video2.mp4', this)">
+        <div class="story-circle">
+            <div class="video-wrapper">
+                <video preload="metadata" muted playsinline oncontextmenu="return false;">
+                    <source src="./video2.mp4#t=0.5">
+                </video>
             </div>
-            <div class="close-btn" onclick="closeStory()">&times;</div>
-            <video id="mainVideo" playsinline onclick="togglePlay()"></video>
         </div>
+        <p>Нурила</p>
+    </div>
+
+    <div class="story-item" data-id="story3" onclick="viewStory('./video3.mp4', this)">
+        <div class="story-circle">
+            <div class="video-wrapper">
+                <video preload="metadata" muted playsinline oncontextmenu="return false;">
+                    <source src="./video3.mp4#t=0.5">
+                </video>
+            </div>
+        </div>
+        <p>Азамат</p>
+    </div>
+
+    <div class="story-item" data-id="story4" onclick="viewStory('./video4.mp4', this)">
+        <div class="story-circle">
+            <div class="video-wrapper">
+                <video preload="metadata" muted playsinline oncontextmenu="return false;">
+                    <source src="./video4.mp4#t=0.5">
+                </video>
+            </div>
+        </div>
+        <p>Айпери</p>
+    </div>
+</div>
+
+<div id="storyFullscreen">
+    <div class="status-bar-container" id="progressBarContainer">
+        <div class="status-bar-bg"><div id="statusBar" class="status-bar-fill"></div></div>
+    </div>
+    <div class="close-btn" onclick="closeStory()">&times;</div>
+    <video id="mainVideo" 
+           playsinline 
+           onclick="togglePlay()" 
+           oncontextmenu="return false;" 
+           controlsList="nodownload" 
+           disablePictureInPicture>
+    </video>
+</div>
+
 
         <h2 class="name">Топ 5 Новые Песни</h2>
         <div class="block-con"><div class="content" id="albumList"></div></div>
