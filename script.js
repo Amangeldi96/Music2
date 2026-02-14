@@ -1,44 +1,38 @@
-// 1. Негизги объекттерди алуу
-const audio = document.getElementById('mainAudio');
-let currentBtn = null;
+// ================= 1. НЕГИЗГИ ОБЪЕКТТЕР ЖАНА КОНФИГУРАЦИЯ =================
+const audio = document.getElementById('mainAudio'); 
+let currentBtn = null; 
 
 if (audio) {
     audio.preload = "metadata"; 
 }
 
-// Сториз үчүн өзгөрмөлөр
+// Сториз (Stories) үчүн керектүү өзгөрмөлөр
 const storyModal = document.getElementById('storyFullscreen');
 const storyVideo = document.getElementById('mainVideo');
 const storyStatusBar = document.getElementById('statusBar');
 const storyProgressContainer = document.getElementById('progressBarContainer');
-let isStoryDragging = false;
-let storyAnim;
+let isStoryDragging = false; 
+let storyAnim; 
 
-// Play иконкасы - Визуалдык борборго такталган (1.8px оңго жылдырылды)
+// Интерфейс үчүн SVG иконкалар (Play, Pause, Loading)
 const iconHTML = `
     <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g transform="translate(1, 0)"> 
             <path d="M7.98047 3.51001C5.43047 4.39001 4.98047 9.09992 4.98047 12.4099C4.98047 15.7199 5.41047 20.4099 7.98047 21.3199C10.6905 22.2499 18.9805 16.1599 18.9805 12.4099C18.9805 8.65991 10.6905 2.58001 7.98047 3.51001Z" fill="#ffffff"></path>
         </g>
-    </svg>
-`;
+    </svg>`;
 
-// Пауза иконкасы - ичинен бир аз кичирейтилген
 const pauseIconHTML = `
     <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g transform="translate(1.5, 1) scale(0.9)">
             <path d="M10 6.42004C10 4.76319 8.65685 3.42004 7 3.42004C5.34315 3.42004 4 4.76319 4 6.42004V18.42C4 20.0769 5.34315 21.42 7 21.42C8.65685 21.42 10 20.0769 10 18.42V6.42004Z" fill="#ffffff"></path>
             <path d="M20 6.42004C20 4.76319 18.6569 3.42004 17 3.42004C15.3431 3.42004 14 4.76319 14 6.42004V18.42C14 20.0769 15.3431 21.42 17 21.42C18.6569 21.42 20 20.0769 20 18.42V6.42004Z" fill="#ffffff"></path>
         </g>
-    </svg>
-`;
+    </svg>`;
 
-
-
-// Спиннер (Жүктөлүү)
 const loadingHTML = `<div class="is-loading-circle"></div>`;
 
-// Стилдерди кошуу (Spinner жана өлчөмдөр үчүн)
+// Динамикалык CSS стилдерин кошуу (Loading спиннери үчүн)
 const style = document.createElement('style');
 style.innerHTML = `
     .is-loading-circle { 
@@ -53,11 +47,12 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
+// Менюну ачуу/жабуу функциясы
 function toggleMenu() {
     document.body.classList.toggle('menu-open');
 }
 
-// 2. Маалыматтар (Данные) - Өзгөртүлгөн жок
+// ================= 2. МААЛЫМАТТАР (SONGS & ARTISTS) =================
 const songs = [
     { artist: "Ulukmanapo & Sam cosmo", title: "Amoremia", src: "assets/song01.mp3" },
     { artist: "G-VOO & FreeMan996", title: "Сагындым", src: "assets/song02.mp3" },
@@ -107,13 +102,14 @@ const upcomingSongs = [
     { artist: "Нурила", title: "Жай гана", cover: "img/upcoming/u3.jpg", preview: "assets/preview3.mp3" }
 ];
 
-// 3. Универсалдуу ойноо функциясы (ТЕЗДЕТИЛГЕН)
+// ================= 3. МУЗЫКА ОЙНОТУУ ЛОГИКАСЫ =================
 function togglePlay(btn, src) {
+    // Сториз ачык болсо, аны жабуу
     if (storyModal && storyModal.style.display === 'block') {
         closeStory();
     }
     
-    // Эгер ошол эле ыр болсо
+    // Эгер ошол эле ыр басылса (Play/Pause)
     if (currentBtn === btn) {
         if (audio.paused) {
             audio.play();
@@ -125,7 +121,7 @@ function togglePlay(btn, src) {
         return;
     }
 
-    // Жаңы ырды жүктөөдө эски баскычты Play кылуу
+    // Жаңы ырды жүктөөдө мурункусун баштапкы абалга келтирүү
     if (currentBtn) {
         currentBtn.innerHTML = iconHTML;
         const prevCard = currentBtn.closest('.upcoming-card') || currentBtn.closest('.block');
@@ -135,11 +131,12 @@ function togglePlay(btn, src) {
     }
 
     currentBtn = btn;
-    btn.innerHTML = loadingHTML; // Жүктөлүү спиннери
+    btn.innerHTML = loadingHTML; // Жүктөө спиннери
 
     audio.pause();
     audio.src = src;
     
+    // Аудио ойноого даяр болгондо
     audio.oncanplay = () => {
         audio.play().catch(e => console.log(e));
         btn.innerHTML = pauseIconHTML;
@@ -149,7 +146,7 @@ function togglePlay(btn, src) {
     audio.load(); 
 }
 
-// 4. Музыка прогресс бары
+// Ырдын прогресс тилкесин жаңыртуу
 audio.ontimeupdate = () => {
     if (currentBtn && audio.duration) {
         const activeCard = currentBtn.closest('.upcoming-card') || currentBtn.closest('.block');
@@ -163,7 +160,7 @@ audio.ontimeupdate = () => {
     }
 };
 
-// 5. СТОРИЗ ЛОГИКАСЫ - Өзгөртүлгөн жок
+// ================= 4. СТОРИЗ (STORIES) ЛОГИКАСЫ =================
 function animateStoryProgress() {
     if (!isStoryDragging && !storyVideo.paused && storyVideo.duration) {
         const percentage = (storyVideo.currentTime / storyVideo.duration) * 100;
@@ -173,7 +170,7 @@ function animateStoryProgress() {
 }
 
 function viewStory(src, element) {
-    if (audio && !audio.paused) audio.pause();
+    if (audio && !audio.paused) audio.pause(); // Музыканы токтотуу
     storyStatusBar.style.width = '0%';
     storyVideo.src = src;
     storyVideo.load();
@@ -199,6 +196,7 @@ function closeStory() {
     isStoryDragging = false;
 }
 
+// Сторизди жылдыруу (Scrubbing)
 function handleStoryScrub(e) {
     if (!storyVideo.duration) return;
     const rect = storyProgressContainer.getBoundingClientRect();
@@ -212,6 +210,7 @@ function handleStoryScrub(e) {
     }
 }
 
+// Drag & Drop (Жылдыруу) окуялары
 const startDragging = (e) => {
     isStoryDragging = true;
     storyProgressContainer.classList.add('active'); 
@@ -228,6 +227,7 @@ const stopDragging = () => {
     }
 };
 
+// Сториз үчүн Event Listener'лер
 if (storyProgressContainer) {
     storyProgressContainer.addEventListener('mousedown', startDragging);
     storyProgressContainer.addEventListener('touchstart', startDragging, { passive: false });
@@ -240,8 +240,9 @@ window.addEventListener('touchend', stopDragging);
 
 storyVideo.onended = closeStory;
 
-// 6. Тизмелерди экранга чыгаруу
+// ================= 5. ДИНАМИКАЛЫК РЕНДЕР (DISPLAY DATA) =================
 document.addEventListener('DOMContentLoaded', () => {
+    // Альбомдорду чыгаруу
     const albumContainer = document.getElementById('albumList');
     if (albumContainer) {
         songs.slice(0, 5).forEach((song, index) => {
@@ -257,6 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Хит ырларды чыгаруу
     const hitContainer = document.getElementById('hitList');
     if (hitContainer) {
         songs.slice(5).forEach(song => {
@@ -270,6 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Жакында чыга турган ырларды чыгаруу
     const upcomingContainer = document.getElementById("upcomingList");
     if (upcomingContainer) {
         upcomingSongs.forEach(song => {
@@ -286,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Артисттердин маалыматын чыгаруу
     const artistDetailContainer = document.getElementById('artistDetailContainer');
     if (artistDetailContainer) {
         artistsInfo.forEach(art => {
@@ -304,6 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ================= 6. КОШУМЧА ФУНКЦИЯЛАР =================
+
+// Сторизди "Көрүлдү" деп белгилөө (localStorage)
 function markAsViewed(id) {
     let viewedStories = JSON.parse(localStorage.getItem('viewedStories') || '[]');
     if (!viewedStories.includes(id)) {
@@ -312,6 +319,7 @@ function markAsViewed(id) {
     }
 }
 
+// Теманы алмаштыруу (Light/Dark/Gold ж.б.)
 function changeTheme(themeName) {
     const themes = ['light', 'dark', 'gold', 'green', 'red'];
     document.body.classList.remove(...themes);
@@ -321,6 +329,7 @@ function changeTheme(themeName) {
     localStorage.setItem('selected-app-theme', themeName);
 }
 
+// Ыр аягына чыкканда интерфейсти тазалоо
 audio.onended = () => { 
     if (currentBtn) {
         currentBtn.innerHTML = iconHTML;
