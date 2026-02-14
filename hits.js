@@ -6,6 +6,7 @@
     const pCont = document.getElementById('pCont');
     const mainPlayBtn = document.getElementById('mainPlayBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const searchInput = document.getElementById('searchInput'); // Издөө талаасы
 
     if(!audio) return;
     audio.preload = "metadata";
@@ -41,13 +42,11 @@
     let isDragging = false;
     let playRequestId = 0;
 
-    // Плей иконкасы (Сиз берген туюк үч бурчтук)
     const getPlayIcon = () => `
         <svg width="24" height="24" viewBox="-0.5 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M7.98047 3.51001C5.43047 4.39001 4.98047 9.09992 4.98047 12.4099C4.98047 15.7199 5.41047 20.4099 7.98047 21.3199C10.6905 22.2499 18.9805 16.1599 18.9805 12.4099C18.9805 8.65991 10.6905 2.58001 7.98047 3.51001Z" fill="#ffffff" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
         </svg>`;
 
-    // Пауза иконкасы (Сиз берген туюк эки тилке)
     const getPauseIcon = () => `
         <svg width="24" height="24" viewBox="-0.5 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M10 6.42004C10 4.76319 8.65685 3.42004 7 3.42004C5.34315 3.42004 4 4.76319 4 6.42004V18.42C4 20.0769 5.34315 21.42 7 21.42C8.65685 21.42 10 20.0769 10 18.42V6.42004Z" fill="#ffffff" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -80,70 +79,50 @@
             toggleMainPlay();
             return;
         }
-
         playRequestId++;
         const requestId = playRequestId;
-
-        // Эски баскычты Play'ге кайтаруу
         if(currentBtn) currentBtn.innerHTML = getPlayIcon();
-
         currentBtn = btn;
         currentSrc = src;
-
         if(typeof songs !== "undefined"){
             currentIndex = songs.findIndex(s => s.src === src);
         }
-
         pFill.style.width = "0%";
         pBuffer.style.width = "0%";
         handle.style.left = "0%";
-
         playerBar.classList.add('active');
         document.getElementById('pTitle').innerText = title;
         document.getElementById('pArtist').innerText = artist;
-
         setIcons("loading");
-
         audio.pause();
         audio.currentTime = 0;
         audio.src = src;
         audio.load();
-
         audio.addEventListener('canplay', function onCanPlay(){
             if(requestId !== playRequestId) return;
             audio.play().then(()=>{ setIcons("playing"); }).catch(()=>{ setIcons("paused"); });
         }, { once:true });
     };
 
-    // ================= MAIN PLAY =================
     window.toggleMainPlay = function(){
         if(!currentSrc) return;
-        if(audio.paused){
-            audio.play();
-        } else {
-            audio.pause();
-        }
+        if(audio.paused) audio.play();
+        else audio.pause();
     };
 
-    // ================= NEXT SONG =================
     function playNext(){
         if(typeof songs === "undefined" || !songs.length) return;
         currentIndex++;
         if(currentIndex >= songs.length) currentIndex = 0;
-
         const nextSong = songs[currentIndex];
         const songElements = document.querySelectorAll('.play-icon-circle');
         const btn = songElements[currentIndex];
-
-        if(btn){
-            togglePlay(btn, nextSong.src, nextSong.title, nextSong.artist);
-        }
+        if(btn) togglePlay(btn, nextSong.src, nextSong.title, nextSong.artist);
     }
 
     if(nextBtn) nextBtn.addEventListener('click', playNext);
     audio.addEventListener('ended', playNext);
 
-    // ================= AUDIO EVENTS =================
     audio.addEventListener('play', ()=> setIcons("playing"));
     audio.addEventListener('pause', ()=> setIcons("paused"));
     audio.addEventListener('waiting', ()=> setIcons("loading"));
@@ -172,16 +151,13 @@
             pFill.style.width = percent*100 + "%";
             handle.style.left = percent*100 + "%";
         };
-
         pCont.addEventListener('click', e=>seek(e.clientX));
         const startDrag = e => { isDragging=true; seek(e.clientX); };
         const moveDrag = e => { if(isDragging) seek(e.clientX); };
         const endDrag = ()=>{ isDragging=false; };
-
         pCont.addEventListener('mousedown', startDrag);
         document.addEventListener('mousemove', moveDrag);
         document.addEventListener('mouseup', endDrag);
-
         pCont.addEventListener('touchstart', e=>{ isDragging=true; seek(e.touches[0].clientX); });
         pCont.addEventListener('touchmove', e=>seek(e.touches[0].clientX));
         pCont.addEventListener('touchend', ()=>{ isDragging=false; });
@@ -207,6 +183,13 @@
             `;
 
             const btn = div.querySelector('.play-icon-circle');
+            
+            
+            if (song.src === currentSrc) {
+                currentBtn = btn;
+                btn.innerHTML = audio.paused ? getPlayIcon() : getPauseIcon();
+            }
+
             btn.onclick = e=>{
                 e.stopPropagation();
                 togglePlay(btn, song.src, song.title, song.artist);
@@ -215,5 +198,17 @@
         });
     };
 
+    // ================= SEARCH LOGIC =================
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            const filteredSongs = songs.filter(song => {
+                return song.title.toLowerCase().includes(query) || 
+                       song.artist.toLowerCase().includes(query);
+            });
+            renderSongs(filteredSongs);
+        });
+    }
+
     renderSongs();
-})();
+})(); //
