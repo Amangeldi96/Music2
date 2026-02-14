@@ -124,7 +124,7 @@ function renderArtists(list) {
     const item = document.createElement('div');
     item.className = 'artist-item';
     
-    // Биринчи тамгасын алуу
+
     const firstLetter = name.charAt(0);
     
     item.innerHTML = `
@@ -140,12 +140,12 @@ function renderArtists(list) {
   });
 }
 
-// Издөө функциясы
+
 searchInput.addEventListener('input', (e) => {
   const term = e.target.value.toLowerCase();
   const filtered = singers.filter(s => s.toLowerCase().includes(term));
   renderArtists(filtered);
 });
 
-// Баштапкы жүктөө
+
 renderArtists(singers.sort());
